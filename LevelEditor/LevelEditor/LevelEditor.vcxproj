@@ -100,7 +100,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;glut32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -117,7 +117,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;glut32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,7 +130,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;glut32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,12 +147,37 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;glut32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\classes\EBO.cpp" />
+    <ClCompile Include="src\classes\shaderClass.cpp" />
+    <ClCompile Include="src\classes\Texture.cpp" />
+    <ClCompile Include="src\classes\TextureEditor.cpp" />
+    <ClCompile Include="src\classes\TextureStack.cpp" />
+    <ClCompile Include="src\classes\VAO.cpp" />
+    <ClCompile Include="src\classes\VBO.cpp" />
     <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\mouseCallBacks.cpp" />
+    <ClCompile Include="src\Shape.cpp" />
+    <ClCompile Include="src\stb\stb.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="libraries\include\level\EBO.h" />
+    <ClInclude Include="libraries\include\level\mouseCallBacks.h" />
+    <ClInclude Include="libraries\include\level\shaders\shaderClass.h" />
+    <ClInclude Include="libraries\include\level\Shape.h" />
+    <ClInclude Include="libraries\include\level\Texture.h" />
+    <ClInclude Include="libraries\include\level\TextureEditor.h" />
+    <ClInclude Include="libraries\include\level\TextureStack.h" />
+    <ClInclude Include="libraries\include\level\VAO.h" />
+    <ClInclude Include="libraries\include\level\VBO.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shaders\default.frag" />
+    <None Include="res\shaders\default.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
