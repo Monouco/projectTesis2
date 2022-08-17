@@ -461,7 +461,7 @@ void calculateTriangle(int xIni, int yIni, int wd, double afov, double offset, i
 	double radOffset = (offset - afov/2) * M_PI / 180;
 	if (radOffset < 0) radOffset += 2 * M_PI;
 	double radius = wd;
-	//double radius = abs(wd / cos(radAFOV / 2));
+	//double radius = abs(wd / cos(radAFOV / 2));a
 	veci2 lineCoord;
 	ShapeFOV params;
 	std::array<int, 2> coord;
