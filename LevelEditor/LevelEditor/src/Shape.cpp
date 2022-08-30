@@ -453,7 +453,8 @@ void drawRect(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* cha
 	}
 }
 
-void calculateTriangle(int xIni, int yIni, int wd, double afov, double offset, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width, int* destBuffer)
+void calculateTriangle(int xIni, int yIni, int wd, double afov, double offset, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width,
+	veci2(*func)(ShapeFOV, int*, int*, int, int, int, int, int*, int), int* destBuffer)
 {
 	int y1 = yIni, y2, y3, x1 = xIni, x2, x3;
 	double radAFOV = afov * M_PI / 180 ;
@@ -461,7 +462,7 @@ void calculateTriangle(int xIni, int yIni, int wd, double afov, double offset, i
 	double radOffset = (offset - afov/2) * M_PI / 180;
 	if (radOffset < 0) radOffset += 2 * M_PI;
 	double radius = wd;
-	//double radius = abs(wd / cos(radAFOV / 2));a
+	//double radius = abs(wd / cos(radAFOV / 2));
 	veci2 lineCoord;
 	ShapeFOV params;
 	std::array<int, 2> coord;
@@ -489,7 +490,7 @@ void calculateTriangle(int xIni, int yIni, int wd, double afov, double offset, i
 
 	//get the line between v2 and v3 to cast rays
 	//lineCoord = drawLineBresenham(params, arrayBuffer, changedArray, mode, save, height, width, destBuffer, 0);
-	lineCoord = bresenhamCircleAlgorithm(params, arrayBuffer, changedArray, mode, save, height, width, destBuffer, 0);
+	lineCoord = func(params, arrayBuffer, changedArray, mode, save, height, width, destBuffer, 0);
 
 	//cast ray for each point on the line between v2 and v3
 	while (!lineCoord.empty()) {

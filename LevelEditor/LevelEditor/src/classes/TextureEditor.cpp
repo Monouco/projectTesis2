@@ -78,6 +78,9 @@ void TextureEditor::processInput(GLFWwindow* window){
 	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS ) {		
 		mode = 2;
 	}
+	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS ) {		
+		mode = 3;
+	}
 
 	//redo
 	if (prevRedo && glfwGetKey(window, GLFW_KEY_Z) == GLFW_RELEASE)
@@ -343,8 +346,8 @@ void TextureEditor::drawShape(int xIni, int yIni, int xEnd, int yEnd, int* array
 			//stop = std::chrono::high_resolution_clock::now();
 			//time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 			//std::cout << "Time for Bresenham: " << time.count() << std::endl << std::endl;
-			//castRayBresenham(xIni, yIni, xEnd, yEnd, arrayBuffer, changedArray, mode, save, height, width, destBuffer);
-			calculateTriangle(xIni, yIni, 20, 200, 0, arrayBuffer, changedArray, mode, save, height, width, destBuffer);
+			castRayBresenham(xIni, yIni, xEnd, yEnd, arrayBuffer, changedArray, mode, save, height, width, destBuffer);
+			//calculateTriangle(xIni, yIni, 20, 200, 0, arrayBuffer, changedArray, mode, save, height, width, &drawLineBresenham, destBuffer);
 			break;
 		case RECTANGLE:
 			drawRect(xIni, yIni, xEnd, yEnd, arrayBuffer, changedArray, mode, save, height, width, destBuffer);
@@ -374,6 +377,12 @@ void TextureEditor::paintPixel(int index, int value)
 			arrTexture[index].r = 230;
 			arrTexture[index].g = 160;
 			arrTexture[index].b = 175;
+			arrTexture[index].a = 20;
+			break;
+		case 3:
+			arrTexture[index].r = 120;
+			arrTexture[index].g = 100;
+			arrTexture[index].b = 230;
 			arrTexture[index].a = 20;
 			break;
 

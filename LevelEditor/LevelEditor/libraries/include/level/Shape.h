@@ -53,7 +53,8 @@ int sectorVal(int secRight, int secLeft, int octant, int xIni, int xEnd, int x, 
 
 void drawRect(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width, int* destBuffer = NULL);
 
-void calculateTriangle(int xIni, int yIni, int wd, double afov, double offset, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width, int* destBuffer = NULL);
+void calculateTriangle(int xIni, int yIni, int wd, double afov, double offset, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width, 
+	veci2(*func)(ShapeFOV, int*, int*, int, int, int, int, int*, int), int* destBuffer = NULL);
 
 //void paintPixel(int index, int value);
 void floodFill(int x, int y, int newValue, int oldValue, int* arrayBuffer, int* changedArray, int height, int width, int* destBuffer = NULL);
