@@ -22,7 +22,11 @@ int main() {
 	population.globalLeaderLimit = globalLeaderLimit;
 	population.localLeaderLimit = localLeaderLimit;
 	population.globalLimitCount = 0;
+	population.numGroups = 1;
 	population.pr = pr;
+	population.groups = new Group[population.MG];
+	population.width = width;
+	population.height = height;
 
 	const double minVal[5] = { 0,0,0,0,0 };
 	const double maxVal[5] = { 1,numModels,width,height,360 };
@@ -30,7 +34,7 @@ int main() {
 	std::cout << "MinVal: " << minVal[0] << ", " << minVal[1] << ", " << minVal[2] << ", " << minVal[3] << ", " << minVal[4] << std::endl;
 	std::cout << "MaxVal: " << maxVal[0] << ", " << maxVal[1] << ", " << maxVal[2] << ", " << maxVal[3] << ", " << maxVal[4] << std::endl;
 
-	initPopulation(population, maxDim, minVal, maxVal, C_OFFSET, models);
+	initPopulation(population, maxDim, minVal, maxVal, C_OFFSET, models,height, width);
 	1 + 1;
 	SM* a;
 	for (int i = population.popSize -1; i > 0; i--) {
