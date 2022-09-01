@@ -64,6 +64,7 @@ class TextureEditor : public  Texture {
 		double reverseMinMaxScaler(double x, GLuint width);
 
 		void drawShape(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* changedArray, int mode, int save, int* destBuffer);
+		int * feasiblePoints();
 
 
 		void paintPixel(int index, int value);

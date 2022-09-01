@@ -81,6 +81,9 @@ void TextureEditor::processInput(GLFWwindow* window){
 	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS ) {		
 		mode = 3;
 	}
+	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS ) {		
+		mode = 4;
+	}
 
 	//redo
 	if (prevRedo && glfwGetKey(window, GLFW_KEY_Z) == GLFW_RELEASE)
@@ -266,8 +269,21 @@ void TextureEditor::refresh(int mode) {
 	}
 }
 
+int * TextureEditor::feasiblePoints() {
+	int* feasiblePoints = new int[height * width];
+	int i;
+	for (i = 0; i < height * width; i++) {
+		if(arrBuffer[i]==1||arrBuffer[i]==2)
+			feasiblePoints[i] = 1;
+		else
+			feasiblePoints[i] = 0;
+	}
+	return feasiblePoints;
+}
+
 void TextureEditor::saveTexture(const char* fileName)
 {
+	int* feasiblePoints;
 	std::ofstream saveFile(fileName, std::ios::out | std::ios::binary);
 	if (!saveFile) {
 		std::cout << "Cannot access file "<< fileName << std::endl;
@@ -278,7 +294,10 @@ void TextureEditor::saveTexture(const char* fileName)
 	saveFile.write((char*)&width, sizeof(int));
 	//saving the array buffer that contains the info of the level
 	saveFile.write((char*)arrBuffer,  sizeof(int) * (std::streamsize) height * (std::streamsize) width);
-
+	//saving the feasible points
+	feasiblePoints = this->feasiblePoints();
+	saveFile.write((char*)feasiblePoints,  sizeof(int) * (std::streamsize) height * (std::streamsize) width);
+	free(feasiblePoints);
 	saveFile.close();
 
 	if (!saveFile.good()) {
@@ -380,8 +399,14 @@ void TextureEditor::paintPixel(int index, int value)
 			arrTexture[index].a = 20;
 			break;
 		case 3:
-			arrTexture[index].r = 120;
+			arrTexture[index].r = 250;
 			arrTexture[index].g = 100;
+			arrTexture[index].b = 100;
+			arrTexture[index].a = 20;
+			break;
+		case 4:
+			arrTexture[index].r = 110;
+			arrTexture[index].g = 110;
 			arrTexture[index].b = 230;
 			arrTexture[index].a = 20;
 			break;
