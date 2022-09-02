@@ -34,7 +34,7 @@ SM::SM(const SM& sm, int mode)
 			solution[i][2] = sm.solution[i][2];
 			solution[i][3] = sm.solution[i][3];
 			solution[i][4] = sm.solution[i][4];
-			solution[i].setModel(solution[i].getModel());
+			solution[i].setModel(sm.solution[i].getModel());
 		}
 
 		//making a copy of the visibility matrix
@@ -82,6 +82,16 @@ int SM::getMaxCams() {
 	return maxCams;
 }
 
+int SM::getHeight()
+{
+	return height;
+}
+
+int SM::getWidth()
+{
+	return width;
+}
+
 double& SM::operator[](int j)
 {
 	int i = j / C_OFFSET;
@@ -90,18 +100,19 @@ double& SM::operator[](int j)
 	return solution[i][k];
 }
 
-void SM::genVisibilityMatrix(int * env, int height, int width) {
+void SM::genVisibilityMatrix(int * env) {
 	int i, j;
 	//Cleaning the matrix from a previous iteration
 	for (i = 0; i < width * height; i++)
 		visibilityMatrix[i] = 0;
 
 	for (i = 0; i < maxCams; i++) {
-		solution[i].calcFOV( env, height, width, visibilityMatrix);
+		if((int)round(solution[i].getUsed()))
+			solution[i].calcFOV( env, height, width, visibilityMatrix);
 	}
 }
 
-double SM::fitSM(int height, int width, int* priorityMatrix,
+double SM::fitSM( int* priorityMatrix,
 	double(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix))
 {
 	fitness = func(solution, maxCams,  height,  width, visibilityMatrix, priorityMatrix);
@@ -113,6 +124,42 @@ void SM::calProb(double maxFitness)
 	prob = 0.9 * fitness / maxFitness + 0.1;
 }
 
+void SM::exportSolution(const char* fileName) {
+	int i;
+	std::ofstream saveFile(fileName, std::ios::out | std::ios::binary);
+	if (!saveFile) {
+		std::cout << "Cannot access file " << fileName << std::endl;
+		return;
+	}
+	//saving height and width
+	saveFile.write((char*)&height, sizeof(int));
+	saveFile.write((char*)&width, sizeof(int));
+	//saving other properties
+	saveFile.write((char*)&maxCams, sizeof(int));
+	saveFile.write((char*)&numCams, sizeof(int));
+	saveFile.write((char*)&fitness, sizeof(double));
+	saveFile.write((char*)&prob, sizeof(double));
+
+	//saving the solution
+	for (i = 0; i < maxCams; i++) {
+		saveFile.write((char *) &solution[i][0], sizeof(double));
+		saveFile.write((char *) &solution[i][1], sizeof(double));
+		saveFile.write((char *) &solution[i][2], sizeof(double));
+		saveFile.write((char *) &solution[i][3], sizeof(double));
+		saveFile.write((char *) &solution[i][4], sizeof(double));
+		saveFile.write((char *) solution[i].getModel(), sizeof(CameraModel));
+	}
+
+	//saving the visibility matrix that contains the coverage of the solution
+	saveFile.write((char*)visibilityMatrix, sizeof(int) * (std::streamsize) height * (std::streamsize) width);
+
+	saveFile.close();
+
+	if (!saveFile.good()) {
+		std::cout << "Error at saving file " << fileName << std::endl;
+	}
+}
+
 SM& SM::operator=(const SM& sm)
 {
 	int i;
@@ -120,6 +167,7 @@ SM& SM::operator=(const SM& sm)
 	prob = sm.prob;
 	fitness = sm.fitness;
 	numCams = sm.numCams;
+	CameraModel* temp;
 
 	//Making a copy of the solution
 	for (i = 0; i < maxCams; i++) {
@@ -128,11 +176,17 @@ SM& SM::operator=(const SM& sm)
 		solution[i][2] = sm.solution[i][2];
 		solution[i][3] = sm.solution[i][3];
 		solution[i][4] = sm.solution[i][4];
-		solution[i].setModel(solution[i].getModel());
+		temp = sm.solution[i].getModel();
+		solution[i].setModel(temp);
+		if (solution[i].getModel() == NULL) {
+			std::cout << "Error setting camera model" << std::endl;
+		}
 	}
 	
 	//making a copy of the visibility matrix
 	for (i = 0; i < width * height; i++) {
 		visibilityMatrix[i] = sm.visibilityMatrix[i];
 	}
+
+	return *this;
 }

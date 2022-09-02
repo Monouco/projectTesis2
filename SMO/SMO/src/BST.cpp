@@ -19,7 +19,7 @@ double operator - (vector3d a, double b) {
 	return abs(a[0] - b);
 }
 
-void addChild(Node* node, vector3d value) {
+void addChild(Node*& node, vector3d value) {
 
 	if (node == NULL) {
 		node = new Node;
@@ -46,13 +46,13 @@ vector3d searchValue(Node* node, double value) {
 	if (node->index < value) {
 		if (node->right == NULL) return node->index;
 		if (node->index - value <= node->right->index - value) return node->index;
-		else searchValue(node->right, value);
+		else return searchValue(node->right, value);
 	}
 	if (node->index > value) {
 		if (node->left == NULL) return node->index;
 		if (node->index - value <= node->left->index - value) return node->index;
-		else searchValue(node->left, value);
+		else return searchValue(node->left, value);
 	}
-	std::cout << "Cannot find the elemnt on BST" << std::endl;
+	std::cout << "Cannot find the element on BST" << std::endl;
 	exit(1);
 }

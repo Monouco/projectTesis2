@@ -2,6 +2,9 @@
 #define SM_H
 #include "Camera.h"
 
+#include <fstream>
+#include <iostream>
+
 #ifndef C_OFFSET
 #define C_OFFSET 5
 #endif // !C_OFFSET
@@ -25,12 +28,15 @@ public:
 	int* getVisibilityMatrix();
 	int getNumCams();
 	int getMaxCams();
+	int getHeight();
+	int getWidth();
 
 	double& operator[](int j);
-	void genVisibilityMatrix(int* env, int height, int width);
-	double fitSM(int height, int width, int* priorityMatrix,
+	void genVisibilityMatrix(int* env);
+	double fitSM(int* priorityMatrix,
 		double(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix));
 	void calProb(double maxFitness);
+	void exportSolution(const char* filename);
 
 	SM& operator=(const SM& sm);
 

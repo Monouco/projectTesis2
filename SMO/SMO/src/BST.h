@@ -22,7 +22,7 @@ int operator > (vector3d a, double b);
 int operator == (vector3d a, double b);
 double operator - (vector3d a, double b);
 
-void addChild(Node* node, vector3d value);
+void addChild(Node*& node, vector3d value);
 vector3d searchValue(Node* node, double value);
 
 
