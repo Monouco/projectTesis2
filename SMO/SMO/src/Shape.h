@@ -8,6 +8,7 @@
 #include <queue>
 #include <array>
 #include <list>
+#include <algorithm>
 #include <iostream>
 
 #define FIRST_SEC 1
@@ -46,8 +47,8 @@ veci2 drawLineBresenham(ShapeFOV lineP, int* arrayBuffer, int* changedArray, int
 veci2 bresenhamAlgorithm(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width, int reversed, int* destBuffer = NULL, int draw = 1);
 veci2 bresenhamCircleAlgorithm(int xCent, int yCent, int xIni, int yIni, int xEnd, int yEnd, int radius, double aRight, double aLeft, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width, int* destBuffer = NULL, int draw = 1);
 veci2 bresenhamCircleAlgorithm(ShapeFOV param, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width, int* destBuffer, int draw);
-void castRayBresenham(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width, int* destBuffer);
-void bresenhamCastAlgorithm(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* changedArray, int mode, int boundValue, int clearValue, int save, int height, int width, int yReversed, int pointsReversed, int* destBuffer);
+void castRayBresenham(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width, int* destBuffer, int* checkedCoords);
+void bresenhamCastAlgorithm(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* changedArray, int mode, int boundValue, int clearValue, int save, int height, int width, int yReversed, int pointsReversed, int* destBuffer, int* checkedCoords);
 
 int sectorVal(int secRight, int secLeft, int octant, int xIni, int xEnd, int x, int loop);
 

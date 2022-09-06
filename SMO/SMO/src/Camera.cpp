@@ -8,6 +8,8 @@ Camera::Camera()
 	used = 0;
 	modelId = 0;
 	offset = 0;
+	virtX = 0;
+	virtY = 0;
 }
 
 Camera::~Camera()
@@ -50,6 +52,16 @@ double Camera::getY() {
 	return y;
 }
 
+double Camera::getVirtX()
+{
+	return virtX;
+}
+
+double Camera::getVirtY()
+{
+	return virtY;
+}
+
 double Camera::getOffset() {
 	return offset;
 }
@@ -70,13 +82,19 @@ double& Camera::operator[](int j)
 		return modelId;
 		break;
 	case 2:
-		return x;
+		return virtX;
 		break;
 	case 3:
-		return y;
+		return virtY;
 		break;
 	case 4:
 		return offset;
+		break;
+	case 5:
+		return x;
+		break;
+	case 6:
+		return y;
 		break;
 	default:
 		std::cout << "Array out of bounds" << std::endl;

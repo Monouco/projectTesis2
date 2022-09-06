@@ -100,6 +100,44 @@ void TextureDisplayer::refresh(int mode) {
 			changed = 1;
 		}
 	}
+	if (solutionSM.getSolution() != NULL) {
+		double x, y;
+		
+		for (i = 0; i < solutionSM.getMaxCams(); i++) {
+			x = solutionSM.getSolution()[i].getX();
+			y = solutionSM.getSolution()[i].getY();
+			//x = 200;
+			//y = 300;
+			if (y + 4 < height) {
+				paintPixel((height - 1 - (int)y + 1) * width + (int)x, 2);
+				paintPixel((height - 1 - (int)y + 2) * width + (int)x, 2);
+				paintPixel((height - 1 - (int)y + 3) * width + (int)x, 2);
+				paintPixel((height - 1 - (int)y + 4) * width + (int)x, 2);
+			}
+			if (y - 4 > 0) {
+				paintPixel((height - 1 - (int)y - 1) * width + (int)x, 2);
+				paintPixel((height - 1 - (int)y - 2) * width + (int)x, 2);
+				paintPixel((height - 1 - (int)y - 3) * width + (int)x, 2);
+				paintPixel((height - 1 - (int)y - 4) * width + (int)x, 2);
+			}
+			if (x + 4 < width) {
+				paintPixel((height - 1 - (int)y) * width + (int)x + 1, 2);
+				paintPixel((height - 1 - (int)y) * width + (int)x + 2, 2);
+				paintPixel((height - 1 - (int)y) * width + (int)x + 3, 2);
+				paintPixel((height - 1 - (int)y) * width + (int)x + 4, 2);
+			}
+			if (x - 4 > 0) {
+				paintPixel((height - 1 - (int)y) * width + (int)x - 1, 2);
+				paintPixel((height - 1 - (int)y) * width + (int)x - 2, 2);
+				paintPixel((height - 1 - (int)y) * width + (int)x - 3, 2);
+				paintPixel((height - 1 - (int)y) * width + (int)x - 4, 2);
+			}
+			//std::cout << "Index de la camara " << i << ": "<< (height - 1 - (int)y) * width + (int)x << std::endl;
+			//std::cout << "x: " << x << " y: " << y << std::endl;
+			//paintPixel( (height - 1 - (int)y) * width + (int)x,2);
+			paintPixel( (height - 1 - (int)y) * width + (int)x,2);
+		}
+	}
 	
 
 	//If changed, allow to refresh the texture
@@ -208,10 +246,10 @@ void TextureDisplayer::paintPixel(int index, int value)
 		}
 	}
 	else {
-		int increment = 10;
-		arrTexture[index].r = 100 + (4-value)*increment;
-		arrTexture[index].g = 200;
-		arrTexture[index].b = 100 + (4 - value) * increment;
+		int increment = 40;
+		arrTexture[index].r = 50 + (value - 4)*increment;
+		arrTexture[index].g = 220;
+		arrTexture[index].b = 50 + (value - 4) * increment;
 		arrTexture[index].a = 100;
 	}
 }

@@ -50,15 +50,15 @@ void dimCorrection(int j, int offset, int& numCams, CameraModel* models, SM* new
 void initPopulation(Pop & pop, int maxDim, const double* minVal, const double* maxVal, int offset, CameraModel* models, int height, int width, Node* wIndex, Node* hIndex);
 void splitGroups(Pop& pop);
 void LocalLeaderPhase(Pop& pop, int maxDim, int offset, CameraModel* models, Node* wIndex, Node* hIndex, int* env, int* priorityMatrix
-	, double(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix));
+	, FitnessStruct(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix));
 void GlobalLeaderPhase(Pop& pop, int maxDim, int offset, CameraModel* models, Node* wIndex, Node* hIndex, int* env, int* priorityMatrix
-	, double(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix));
+	, FitnessStruct(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix));
 void LocalLeaderLearningPhase(Pop& pop, int selection = 0);
 void GlobalLeaderLearningPhase(Pop& pop, int selection = 0);
 void LocalLeaderDecisionPhase(Pop& pop, int maxDim, const double* minVal, const double* maxVal, int offset, CameraModel* models, Node* wIndex, Node* hIndex);
 void GlobalLeaderDecisionPhase(Pop& pop);
 
 void SMOAlgorithm(Pop& pop, int maxDim, const double* minVal, const double* maxVal, int offset, CameraModel* models, int height, int width, int* env, int* priority, int nIter, Node* wIndex, Node* hIndex
-, double(*objectiveFunction)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix));
+, FitnessStruct(*objectiveFunction)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix));
 
 #endif // !SMO_H

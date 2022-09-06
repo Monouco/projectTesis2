@@ -112,7 +112,7 @@ void SM::genVisibilityMatrix(int * env) {
 		visibilityMatrix[i] = 0;
 
 	for (i = 0; i < maxCams; i++) {
-		if((int)round(solution[i].getUsed()))
+		if((int)round(solution[i].getUsed()) == 1)
 			solution[i].calcFOV( env, height, width, visibilityMatrix);
 	}
 }

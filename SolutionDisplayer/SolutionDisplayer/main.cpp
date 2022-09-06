@@ -25,8 +25,8 @@
 #define SQUARE_X 0.8f
 #define SQUARE_Y 0.8f
 #define SCALE_VAL 0.0f
-#define PERCENT_WIDTH 0.8f
-#define PERCENT_HEIGHT 0.8f
+#define PERCENT_WIDTH 0.3f
+#define PERCENT_HEIGHT 0.3f
 
 
 //Vertice definition

@@ -29,6 +29,8 @@ public:
 	double getUsed();
 	double getX();
 	double getY();
+	double getVirtX();
+	double getVirtY();
 	double getOffset();
 	CameraModel* getModel();
 
@@ -42,6 +44,8 @@ private:
 	double used;
 	double x;
 	double y;
+	double virtX;
+	double virtY;
 	double offset;
 	double modelId;
 	CameraModel* model;	

@@ -297,32 +297,32 @@ veci2 bresenhamCircleAlgorithm(ShapeFOV param, int* arrayBuffer, int* changedArr
 	return bresenhamCircleAlgorithm(xCent, yCent, xIni, yIni, xEnd, yEnd, radius, aRight, aLeft, arrayBuffer, changedArray, mode, save, height, width, destBuffer, draw);
 }
 
-void castRayBresenham(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width, int* destBuffer)
+void castRayBresenham(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width, int* destBuffer, int* checkedCoords)
 {
 	if (destBuffer == NULL) destBuffer = arrayBuffer;
 	//Slope < 1
 	if (abs(yEnd - yIni) < abs(xEnd - xIni)) {
 
 		if (xIni <= xEnd) {
-			bresenhamCastAlgorithm(xIni, yIni, xEnd, yEnd, arrayBuffer, changedArray, mode, 1, 0, save, height, width, 0, 0, destBuffer);
+			bresenhamCastAlgorithm(xIni, yIni, xEnd, yEnd, arrayBuffer, changedArray, mode, 1, 0, save, height, width, 0, 0, destBuffer, checkedCoords);
 		}
 		else {
-			bresenhamCastAlgorithm(xEnd, yEnd, xIni, yIni, arrayBuffer, changedArray, mode, 1, 0, save, height, width, 0, 1, destBuffer);
+			bresenhamCastAlgorithm(xEnd, yEnd, xIni, yIni, arrayBuffer, changedArray, mode, 1, 0, save, height, width, 0, 1, destBuffer, checkedCoords);
 		}
 		
 	}
 	else {//Slope >= 1
 
 		if (yIni <= yEnd) {
-			bresenhamCastAlgorithm(yIni, xIni, yEnd, xEnd, arrayBuffer, changedArray, mode, 1, 0, save, width, height, 1, 0, destBuffer);
+			bresenhamCastAlgorithm(yIni, xIni, yEnd, xEnd, arrayBuffer, changedArray, mode, 1, 0, save, width, height, 1, 0, destBuffer, checkedCoords);
 		}
 		else {
-			bresenhamCastAlgorithm(yEnd, xEnd, yIni, xIni, arrayBuffer, changedArray, mode, 1, 0, save, width, height, 1, 1, destBuffer);
+			bresenhamCastAlgorithm(yEnd, xEnd, yIni, xIni, arrayBuffer, changedArray, mode, 1, 0, save, width, height, 1, 1, destBuffer, checkedCoords);
 		}
 	}
 }
 
-void bresenhamCastAlgorithm(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* changedArray, int mode, int boundValue, int clearValue, int save, int height, int width, int yReversed, int pointsReversed, int* destBuffer)
+void bresenhamCastAlgorithm(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* changedArray, int mode, int boundValue, int clearValue, int save, int height, int width, int yReversed, int pointsReversed, int* destBuffer, int* checkedCoords)
 {
 	int dx, dy, yi = 1, d, x, y, index, outBounds;
 	veci3 lineCoords;
@@ -371,6 +371,7 @@ void bresenhamCastAlgorithm(int xIni, int yIni, int xEnd, int yEnd, int* arrayBu
 
 		//adding points to the list
 		lineCoords.push_back(coord);
+
 
 		//moving on y and calculating next decision factor
 		if (d > 0) {
@@ -424,16 +425,19 @@ void bresenhamCastAlgorithm(int xIni, int yIni, int xEnd, int yEnd, int* arrayBu
 		//out of bounds
 		if (coord[0] < 0 || coord[1] < 0 || coord[0] >= width || coord[1] >= height) break;
 
-		//Writing the point of the line
-		if(mode==-1)
-			destBuffer[index] += 1;
-		else
-			destBuffer[index] = mode;
-		// if the button has been released, this will change the array
-		if (save) {			
-			changedArray[index] = 1;
+		if (checkedCoords[index] == 0) {
+			//marking coord as visited
+			checkedCoords[index] = 1;
+			//Writing the point of the line		
+			if (mode == -1)
+				destBuffer[index] += 1;
+			else
+				destBuffer[index] = mode;
+			// if the button has been released, this will change the array
+			if (save) {
+				changedArray[index] = 1;
+			}
 		}
-
 	}
 
 }
@@ -470,7 +474,7 @@ void drawRect(int xIni, int yIni, int xEnd, int yEnd, int* arrayBuffer, int* cha
 void calculateTriangle(int xIni, int yIni, int wd, double afov, double offset, int* arrayBuffer, int* changedArray, int mode, int save, int height, int width,
 	veci2(*func)(ShapeFOV, int*, int*, int, int, int, int, int*, int), int* destBuffer)
 {
-	int y1 = yIni, y2, y3, x1 = xIni, x2, x3;
+	int y1 = yIni, y2, y3, x1 = xIni, x2, x3, * checkedCoords = new int[height*width];
 	double radAFOV = afov * M_PI / 180 ;
 	//the offset is the angle to de center to the FOV
 	double radOffset = (offset - afov/2) * M_PI / 180;
@@ -506,13 +510,18 @@ void calculateTriangle(int xIni, int yIni, int wd, double afov, double offset, i
 	//lineCoord = drawLineBresenham(params, arrayBuffer, changedArray, mode, save, height, width, destBuffer, 0);
 	lineCoord = func(params, arrayBuffer, changedArray, mode, save, height, width, destBuffer, 0);
 
+	//initialize checked coords
+	int i;
+	for (i = 0; i < height * width; i++)
+		checkedCoords[i] = 0;
+
 	//cast ray for each point on the line between v2 and v3
 	while (!lineCoord.empty()) {
 		coord = lineCoord.front();
 		lineCoord.pop_front();
-		castRayBresenham(xIni, yIni, coord[0], coord[1], arrayBuffer, changedArray, mode, save, height, width, destBuffer);
+		castRayBresenham(xIni, yIni, coord[0], coord[1], arrayBuffer, changedArray, mode, save, height, width, destBuffer, checkedCoords);
 	}
-
+	delete checkedCoords;
 }
 
 

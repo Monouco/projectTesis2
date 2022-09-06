@@ -25,7 +25,7 @@ void readEnv(const char* fileName, int*& env, int*& feasible, int*& priority, in
 		return;
 	}
 	int* fTemp;
-	double i, j;
+	double x, y;
 	int k;
 	std::vector<vector3d> wList, hList;
 	vector3d wVect, hVect;
@@ -40,19 +40,20 @@ void readEnv(const char* fileName, int*& env, int*& feasible, int*& priority, in
 	openedFile.read((char*)env, sizeof(int) * (std::streamsize) height * (std::streamsize) width);
 	//creating the feasible points array
 	openedFile.read((char*)fTemp, sizeof(int) * (std::streamsize) height * (std::streamsize) width);
-	
-	for (i = 0, k=0; i < height; i = i + 1) {
-		for (j = 0; j < width; j = j + 1) {
+	//(height - 1 - y)* width + x
+	for (y = 0, k=height*width-1; y < height; y = y + 1) {
+		for (x = width-1; x >= 0; x = x - 1) {
 			//Feasible points
-			if (fTemp[k] == 1) {
-				wVect[0] = ((double)width - 1 - j) * height + i;
-				wVect[1] = j;
-				wVect[2] = i;
+			if (env[k] == 1 || env[k] == 2) {
+				//hVect[0] =  x* (double)height + y;
+				hVect[0] = ((double)width - 1 - x) * height + y;
+				hVect[1] = x;
+				hVect[2] = y;
 
-				hVect[0] = ((double)height - 1 - i) * width + j;
-				hVect[1] = j;
-				hVect[2] = i;
-
+				//wVect[0] =   y * (double)width + x;
+				wVect[0] = ((double)height - 1 - y) * width + x;
+				wVect[1] = x;
+				wVect[2] = y;
 				wList.push_back(wVect);
 				hList.push_back(hVect);
 			}
@@ -72,7 +73,7 @@ void readEnv(const char* fileName, int*& env, int*& feasible, int*& priority, in
 				priority[k] = 0;
 				break;
 			}
-			k++;
+			k--;
 		}
 	}
 
@@ -105,33 +106,40 @@ void readModels(const char* fileName, CameraModel*& models, int& numModels)
 	numModels = 1;
 	models[0].cost = 20;
 	models[0].focalLength = 10;
-	models[0].range = 20;
+	models[0].range = 150;
 	models[0].resolution = 720;
 	models[0].sensor = 12;
 	models[0].afov = 2 * atan(models[0].sensor / (2 * models[0].focalLength)) * 180 / M_PI;
 }
 
-void closestFeasiblePoint(SM* newSM, Node* wIndex, Node* hIndex) {
+void closestFeasiblePoint(SM* newSM, int j, int offset, Node* wIndex, Node* hIndex) {
 	vector3d xIndex, yIndex;
 	double x, y, indexX, indexY;
 	int height, width;
+	int pos = j / offset;
 
-	x = round((*newSM)[2]);
-	y = round((*newSM)[3]);
+	x = abs(round((*newSM)[pos*offset + 2]));
+	y = abs(round((*newSM)[pos*offset + 3]));
 	height = newSM->getHeight();
 	width = newSM->getWidth();
-	indexX = ((double)width - 1 - x) * height + y;
-	indexY = ((double)height - 1 - y) * width + x;
+	//indexY = x * height + y;
+	indexY = ((double)width - 1 - x) * height + y;
+	//indexX = y * width + x;
+	indexX = ((double)height - 1 - y) * width + x;
 	xIndex = searchValue(wIndex, indexX);
 	yIndex = searchValue(hIndex, indexY);
 	//getting which point is closer
 	if (xIndex - indexX < yIndex - indexY) {
-		(*newSM)[2] = xIndex[1];
-		(*newSM)[3] = xIndex[2];
+		//(*newSM)[pos * offset + 2] = xIndex[1];
+		//(*newSM)[pos * offset + 3] = xIndex[2];
+		(*newSM).getSolution()[pos][5] = xIndex[1];
+		(*newSM).getSolution()[pos][6] = xIndex[2];
 	}
 	else {
-		(*newSM)[2] = yIndex[1];
-		(*newSM)[3] = yIndex[2];
+		//(*newSM)[pos * offset + 2] = yIndex[1];
+		//(*newSM)[pos * offset + 3] = yIndex[2];
+		(*newSM).getSolution()[pos][5] = yIndex[1];
+		(*newSM).getSolution()[pos][6] = yIndex[2];
 	}
 }
 
@@ -140,13 +148,19 @@ void dimCorrection(int j, int offset, int& numCams, CameraModel * models, SM* ne
 	switch (j % offset)
 	{
 	case 0:
+		if ((*newSM)[j] < 0) {
+			(*newSM)[j] = 0;
+		}
+		if ((*newSM)[j] > 1) {
+			(*newSM)[j] = 1;
+		}
 		numCams += round((*newSM)[j]);
 		break;
 	case 1:
 		newSM->setModelCam(&models[(int)round((*newSM)[j])], j);
 		break;
 	case 3: //setting y, so the closest feasible solution will be selected
-		closestFeasiblePoint(newSM, wIndex, hIndex);
+		closestFeasiblePoint(newSM, j, offset, wIndex, hIndex);
 		break;
 	default:
 		break;
@@ -219,7 +233,7 @@ void calcProb(Pop& pop) {
 
 //Leader Phase
 void LocalLeaderPhase(Pop& pop, int maxDim, int offset, CameraModel* models, Node* wIndex, Node* hIndex, int* env, int* priorityMatrix
-	, double(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix)) {
+	, FitnessStruct(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix)) {
 	int k, mg = pop.numGroups, gs, i, j, r, numCams;
 	SM** members, * newSM, *sm, *localLeader;
 	newSM = new SM(*pop.globalLeader, 0);
@@ -233,7 +247,7 @@ void LocalLeaderPhase(Pop& pop, int maxDim, int offset, CameraModel* models, Nod
 			for (j = 0; j < maxDim; j++) {
 				if (rand01(0, 1) >= pop.pr) {
 					r = randInt(0, gs, i);
-					(*newSM)[j] = (*sm)[j] + rand01(0, 1) * ((*localLeader)[j] - (*sm)[j]) + rand01(-1, 1) * ((*members[r])[j] - (*sm)[j]);
+					(*newSM)[j] = abs((*sm)[j] + rand01(0, 1) * ((*localLeader)[j] - (*sm)[j]) + rand01(-1, 1) * ((*members[r])[j] - (*sm)[j]));
 				}
 				else {
 					(*newSM)[j] = (*sm)[j];
@@ -254,7 +268,7 @@ void LocalLeaderPhase(Pop& pop, int maxDim, int offset, CameraModel* models, Nod
 }
 
 void GlobalLeaderPhase(Pop& pop, int maxDim, int offset, CameraModel* models, Node* wIndex, Node* hIndex, int* env, int* priorityMatrix
-	, double(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix)) {
+	, FitnessStruct(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix)) {
 	int k, mg = pop.numGroups, gs, i, j, r, count, numCams, camMut;
 	SM** members, * newSM, * sm, * globalLeader = pop.globalLeader;
 	newSM = new SM(*globalLeader, 0);
@@ -274,13 +288,19 @@ void GlobalLeaderPhase(Pop& pop, int maxDim, int offset, CameraModel* models, No
 					//calculating new position
 					r = randInt(0, gs, i);
 					j = randInt(0, maxDim);
-					(*newSM)[j] = (*sm)[j] + rand01(0, 1) * ((*globalLeader)[j] - (*sm)[j]) + rand01(-1, 1) * ((*members[r])[j] - (*sm)[j]);
+					(*newSM)[j] = abs((*sm)[j] + rand01(0, 1) * ((*globalLeader)[j] - (*sm)[j]) + rand01(-1, 1) * ((*members[r])[j] - (*sm)[j]));
 
 					//dimension correction
 					switch (j % offset)
 					{
 						//camera usage
 					case 0:
+						if ((*newSM)[j] < 0) {
+							(*newSM)[j] = 0;
+						}
+						if ((*newSM)[j] > 1) {
+							(*newSM)[j] = 1;
+						}
 						camMut = (int)round((*newSM)[j]) - (int)round((*sm)[j]);
 						numCams += camMut;
 						newSM->setNumCams(numCams);
@@ -291,11 +311,11 @@ void GlobalLeaderPhase(Pop& pop, int maxDim, int offset, CameraModel* models, No
 						break;
 						// x position
 					case 2:
-						closestFeasiblePoint(newSM, wIndex, hIndex);
+						closestFeasiblePoint(newSM, j, offset, wIndex, hIndex);
 						break;
 						// y position
 					case 3:
-						closestFeasiblePoint(newSM, wIndex, hIndex);
+						closestFeasiblePoint(newSM, j, offset, wIndex, hIndex);
 						break;
 					default:
 						break;
@@ -404,6 +424,7 @@ void LocalLeaderDecisionPhase(Pop& pop, int maxDim, const double* minVal, const 
 	globalLeader = pop.globalLeader;
 	for (k = 0; k < mg; k++) {
 		if (pop.groups[k].localLimitCount > pop.localLeaderLimit) {
+			std::cout << "Moving group " << k << std::endl;
 			pop.groups[k].localLimitCount = 0;
 			gs = pop.groups[k].groupSize;
 			members = pop.groups[k].groupMembers;
@@ -413,10 +434,10 @@ void LocalLeaderDecisionPhase(Pop& pop, int maxDim, const double* minVal, const 
 				numCams = 0;
 				for (j = 0; j < maxDim; j++) {
 					if (rand01(0, 1) > pop.pr) {
-						(*sm)[j] = (minVal)[j % offset] + rand01(0, 1) * (maxVal[j % offset] - minVal[j % offset]);
+						(*sm)[j] = abs((minVal)[j % offset] + rand01(0, 1) * (maxVal[j % offset] - minVal[j % offset]));
 					}
 					else {
-						(*sm)[j] = (*sm)[j] + rand01(0, 1) * ((*globalLeader)[j] - (*sm)[j]) + rand01(0, 1) * ((*sm)[j] - (*localLeader)[j]);
+						(*sm)[j] = abs((*sm)[j] + rand01(0, 1) * ((*globalLeader)[j] - (*sm)[j]) + rand01(0, 1) * ((*sm)[j] - (*localLeader)[j]));
 					}
 
 					//correcting dimensions
@@ -457,7 +478,7 @@ void GlobalLeaderDecisionPhase(Pop& pop) {
 
 //main algorithm
 void SMOAlgorithm(Pop& pop, int maxDim, const double* minVal, const double* maxVal, int offset, CameraModel* models, int height, int width, int* env, int * priority, int nIter, Node* wIndex, Node* hIndex
-	, double(*objectiveFunction)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix)) {
+	, FitnessStruct(*objectiveFunction)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix)) {
 	int i;
 	pop.bestSolution = NULL;
 	pop.globalLeader = NULL;
@@ -479,17 +500,26 @@ void SMOAlgorithm(Pop& pop, int maxDim, const double* minVal, const double* maxV
 	GlobalLeaderLearningPhase(pop, 1);
 	for (i = 0; i < nIter; i++) {
 		std::cout << "Global Leader Fitness for iteration "<< i  << " : " <<pop.globalLeader->getFitness() << std::endl;
+		std::cout << "Global Leader Cameras Count "<< i  << " : " <<pop.globalLeader->getNumCams() << std::endl;
+		std::cout << "Global Leader FO1 "<< i  << " : " <<pop.globalLeader->getFullFitness().FO1 << std::endl;
+		std::cout << "Global Leader FO2 "<< i  << " : " << pop.globalLeader->getFullFitness().FO2 << std::endl;
+		std::cout << "Global Leader FO "<< i  << " : " << pop.globalLeader->getFullFitness().mainFO << std::endl;
+
+		std::cout << "LLP" << std::endl;
 		LocalLeaderPhase(pop, maxDim, offset, models, wIndex, hIndex, env, priority, objectiveFunction);
 
 		//Calculate prob for each SM
 		calcProb(pop);
-
+		std::cout << "GLP" << std::endl;
 		GlobalLeaderPhase(pop, maxDim, offset, models, wIndex, hIndex, env, priority, objectiveFunction);
 
+		std::cout << "LLLP" << std::endl;
 		LocalLeaderLearningPhase(pop);
+		std::cout << "GLLP" << std::endl;
 		GlobalLeaderLearningPhase(pop);
-
+		std::cout << "LLDP" << std::endl;
 		LocalLeaderDecisionPhase(pop, maxDim, minVal, maxVal, offset, models, wIndex, hIndex);
+		std::cout << "GLDP" << std::endl;
 		GlobalLeaderDecisionPhase(pop);
 	}
 }

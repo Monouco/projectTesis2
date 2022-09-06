@@ -10,6 +10,9 @@ SM::SM(int maxCams, int height, int width)
 	this->width = width;
 	this->height = height;
 	visibilityMatrix = new int[width * height];
+	fullFitness.mainFO = 0;
+	fullFitness.FO1 = 0;
+	fullFitness.FO2 = 0;
 }
 
 SM::SM(const SM& sm, int mode)
@@ -34,6 +37,8 @@ SM::SM(const SM& sm, int mode)
 			solution[i][2] = sm.solution[i][2];
 			solution[i][3] = sm.solution[i][3];
 			solution[i][4] = sm.solution[i][4];
+			solution[i][5] = sm.solution[i][5];
+			solution[i][6] = sm.solution[i][6];
 			solution[i].setModel(sm.solution[i].getModel());
 		}
 
@@ -41,11 +46,17 @@ SM::SM(const SM& sm, int mode)
 		for (i = 0; i < width * height; i++) {
 			visibilityMatrix[i] = sm.visibilityMatrix[i];
 		}
+		fullFitness.mainFO = sm.fullFitness.mainFO;
+		fullFitness.FO1 = sm.fullFitness.FO1;
+		fullFitness.FO2 = sm.fullFitness.FO2;
 	}
 	else {
 		prob = 0;
 		fitness = 0;
 		numCams = 0;
+		fullFitness.mainFO = 0;
+		fullFitness.FO1 = 0;
+		fullFitness.FO2 = 0;
 	}
 }
 
@@ -63,7 +74,13 @@ void SM::setModelCam(CameraModel* cam, int j) {
 
 double SM::getFitness()
 {
-	return fitness;
+	//return fitness;
+	return fullFitness.mainFO;
+}
+
+FitnessStruct SM::getFullFitness()
+{
+	return fullFitness;
 }
 
 Camera* SM::getSolution() {
@@ -113,15 +130,19 @@ void SM::genVisibilityMatrix(int * env) {
 }
 
 double SM::fitSM( int* priorityMatrix,
-	double(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix))
+	FitnessStruct(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix))
 {
-	fitness = func(solution, maxCams,  height,  width, visibilityMatrix, priorityMatrix);
+	fullFitness = func(solution, maxCams,  height,  width, visibilityMatrix, priorityMatrix);
+	fitness = fullFitness.mainFO;
 	return fitness;
 }
 
 void SM::calProb(double maxFitness)
 {
-	prob = 0.9 * fitness / maxFitness + 0.1;
+	if (maxFitness != 0)
+		prob = 0.9 * fitness / maxFitness + 0.1;
+	else
+		prob = 1;
 }
 
 void SM::exportSolution(const char* fileName) {
@@ -144,8 +165,10 @@ void SM::exportSolution(const char* fileName) {
 	for (i = 0; i < maxCams; i++) {
 		saveFile.write((char *) &solution[i][0], sizeof(double));
 		saveFile.write((char *) &solution[i][1], sizeof(double));
-		saveFile.write((char *) &solution[i][2], sizeof(double));
-		saveFile.write((char *) &solution[i][3], sizeof(double));
+		//saveFile.write((char *) &solution[i][2], sizeof(double));
+		//saveFile.write((char *) &solution[i][3], sizeof(double));
+		saveFile.write((char*)&solution[i][5], sizeof(double));
+		saveFile.write((char*)&solution[i][6], sizeof(double));
 		saveFile.write((char *) &solution[i][4], sizeof(double));
 		saveFile.write((char *) solution[i].getModel(), sizeof(CameraModel));
 	}
@@ -176,6 +199,8 @@ SM& SM::operator=(const SM& sm)
 		solution[i][2] = sm.solution[i][2];
 		solution[i][3] = sm.solution[i][3];
 		solution[i][4] = sm.solution[i][4];
+		solution[i][5] = sm.solution[i][5];
+		solution[i][6] = sm.solution[i][6];
 		temp = sm.solution[i].getModel();
 		solution[i].setModel(temp);
 		if (solution[i].getModel() == NULL) {
@@ -187,6 +212,10 @@ SM& SM::operator=(const SM& sm)
 	for (i = 0; i < width * height; i++) {
 		visibilityMatrix[i] = sm.visibilityMatrix[i];
 	}
+
+	fullFitness.mainFO = sm.fullFitness.mainFO;
+	fullFitness.FO1 = sm.fullFitness.FO1;
+	fullFitness.FO2 = sm.fullFitness.FO2;
 
 	return *this;
 }

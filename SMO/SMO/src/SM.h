@@ -8,6 +8,11 @@
 #ifndef C_OFFSET
 #define C_OFFSET 5
 #endif // !C_OFFSET
+typedef struct FitnessStruct {
+	double mainFO;
+	double FO1;
+	double FO2;
+}FitnessStruct;
 
 
 class SM
@@ -23,6 +28,7 @@ public:
 
 	//getters
 	double getFitness();
+	FitnessStruct getFullFitness();
 	Camera* getSolution();
 	double getProb();
 	int* getVisibilityMatrix();
@@ -34,7 +40,7 @@ public:
 	double& operator[](int j);
 	void genVisibilityMatrix(int* env);
 	double fitSM(int* priorityMatrix,
-		double(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix));
+		FitnessStruct(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix));
 	void calProb(double maxFitness);
 	void exportSolution(const char* filename);
 
@@ -44,6 +50,7 @@ private:
 	int numCams;
 	Camera* solution;
 	double fitness;
+	FitnessStruct fullFitness;
 	double prob;
 	int* visibilityMatrix;
 	int maxCams;
