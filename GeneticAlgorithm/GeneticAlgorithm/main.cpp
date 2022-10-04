@@ -1,10 +1,11 @@
 
-#include "src/SMO.h"
+#include "src/GeneticAlgorithm.h"
 #include <ctime>
 
 #define ALPHA 2.5f
 #define PRIORITY_THRESHOLD 0.4f
 #define NON_PRIORITY_THRESHOLD 0.2f
+#define C_OFFSET 5
 
 //cost function
 double objectiveFunction1(Camera* solution, int maxCams) {
@@ -20,7 +21,7 @@ double objectiveFunction1(Camera* solution, int maxCams) {
 }
 
 //camera coverage metric
-/*double objectiveFunction2(int height, int width, int* visibilityMatrix, int* priorityMatrix) {
+double objectiveFunction2(int height, int width, int* visibilityMatrix, int* priorityMatrix) {
 	int i, priorityCount = 0, nonPriorityCount = 0, fullPriority = 0, fullNonPriority = 0;
 	double priorityC, nonPriorityC;
 	for (i = 0; i < width * height; i++) {
@@ -48,7 +49,7 @@ double objectiveFunction1(Camera* solution, int maxCams) {
 	else {
 		priorityC = priorityCount;
 	}
-	if (fullNonPriority * NON_PRIORITY_THRESHOLD > nonPriorityCount) { 
+	if (fullNonPriority * NON_PRIORITY_THRESHOLD > nonPriorityCount) {
 		if (nonPriorityCount != 0)
 			nonPriorityC = 1 - (double)1 / nonPriorityCount;
 		else
@@ -59,10 +60,10 @@ double objectiveFunction1(Camera* solution, int maxCams) {
 	}
 
 	return (double)priorityC * ALPHA + nonPriorityC;
-}*/
+}
 
 //not covered metric
-double objectiveFunction2(int height, int width, int* visibilityMatrix, int* priorityMatrix) {
+/*double objectiveFunction2(int height, int width, int* visibilityMatrix, int* priorityMatrix) {
 	int i, priorityCount = 0, nonPriorityCount = 0, fullPriority = 0, fullNonPriority = 0, redundancyVal = 0;;
 	double priorityC, nonPriorityC;
 	for (i = 0; i < width * height; i++) {
@@ -95,11 +96,11 @@ double objectiveFunction2(int height, int width, int* visibilityMatrix, int* pri
 	else {
 		priorityC = 1-(double)priorityCount / fullPriority;
 	}*/
-	nonPriorityC = nonPriorityCount;
+	/*nonPriorityC = nonPriorityCount;
 	//return  1- nonPriorityC / fullNonPriority;
 	return  nonPriorityC - (double)redundancyVal/2;
 
-}
+}*/
 
 // trying to maximize the whole objective function
 FitnessStruct objectiveFunction(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix) {
@@ -115,44 +116,37 @@ FitnessStruct objectiveFunction(Camera* solution, int maxCams, int height, int w
 
 
 int main() {
-	int* env = NULL, *feasible = NULL, *priority = NULL, height, width, numModels = 0;
-	Node* wIndex = NULL, * hIndex = NULL;
+	int* env = NULL, *feasible = NULL, *priority = NULL, height, width, numModels = 0, numSectors=0;
 	CameraModel* models = NULL;
 
-	int nIter = 50, popSize = 50, maxCam = 4, globalLeaderLimit = popSize / 2;
-	int maxDim = maxCam * C_OFFSET;
-	int localLeaderLimit = 20;
-	//int localLeaderLimit = maxDim * popSize / 80;
-	double pr = 0.9;
+	int nIter = 50, popSize = 50, maxCam = 5, numPos = 0,  maxMutatedGenes= 5;
+	
+	Position* positions;
+	double* sectorsOffset;
+	double crossRate = 0.6, mutRate = 0.2, bestRate = 0.8;
 
-	double* minVal = new double[maxDim];
-	double* maxVal = new double[maxDim];
 
 	//reading camera models from file
-	readModels("models.csv", models, numModels);
+	readModels("models.csv", models, numModels, numSectors, sectorsOffset);
 	//reading the enviroment from the file
-	readEnv("level.pz", env, feasible, priority, height, width, wIndex, hIndex, minVal, maxVal, C_OFFSET, maxCam, numModels);
+	readEnv("level.pz", env, feasible, priority, height, width, C_OFFSET, maxCam, numModels, numPos, positions, numSectors, sectorsOffset);
 
 
 	Pop population;
 	population.popSize = popSize;
-	population.MG = popSize / 10;
-	population.globalLeaderLimit = globalLeaderLimit;
-	population.localLeaderLimit = localLeaderLimit;
-	population.globalLimitCount = 0;
-	population.numGroups = 1;
-	population.pr = pr;
-	population.groups = new Group[population.MG];
+	population.maxPopSize = popSize;
+	population.maxMutGenes = maxMutatedGenes;
+	population.numPos = numPos;
+	population.mutRate = mutRate;
+	population.crossRate = crossRate;
+	population.bestRate = bestRate;
+	population.population = new Chromosome * [popSize];
 	population.width = width;
 	population.height = height;
+	population.bestSolution = new Chromosome(positions, numPos, height, width, maxCam);
 
-	//const double minVal[5] = { 0,0,0,0,0 };
-	//const double maxVal[5] = { 1,numModels -1,width,height,360 };
+	GeneticAlgorithm(population, models, numModels, height, width, env, priority, nIter, maxCam, positions, numPos, objectiveFunction);
 
-	std::cout << "MinVal: " << minVal[0] << ", " << minVal[1] << ", " << minVal[2] << ", " << minVal[3] << ", " << minVal[4] << std::endl;
-	std::cout << "MaxVal: " << maxVal[0] << ", " << maxVal[1] << ", " << maxVal[2] << ", " << maxVal[3] << ", " << maxVal[4] << std::endl;
-
-	SMOAlgorithm(population, maxDim, minVal, maxVal, C_OFFSET, models, height, width, env, priority, nIter, wIndex, hIndex, objectiveFunction);
 
 	std::cout << "Best Leader Fitness  : " << population.bestSolution->getFitness() << std::endl;
 	std::cout << "Best Leader Cameras Count  : " << population.bestSolution->getNumCams() << std::endl;
@@ -166,7 +160,10 @@ int main() {
 			", " << population.bestSolution->getSolution()[i].getOffset()<< std::endl;
 	}
 	std::cout << std::endl;
-	population.bestSolution->exportSolution("bestSM.sm");
+	
+	population.bestSolution->genVisibilityMatrix(env);
+
+	population.bestSolution->exportSolution("bestCh.sm");
 	
 
 	return 0;

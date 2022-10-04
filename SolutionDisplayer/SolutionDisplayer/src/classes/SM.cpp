@@ -105,22 +105,22 @@ double& SM::operator[](int j)
 	return solution[i][k];
 }
 
-void SM::genVisibilityMatrix(int * env) {
+void SM::genVisibilityMatrix(int* env) {
 	int i, j;
 	//Cleaning the matrix from a previous iteration
 	for (i = 0; i < width * height; i++)
 		visibilityMatrix[i] = 0;
 
 	for (i = 0; i < maxCams; i++) {
-		if((int)round(solution[i].getUsed()) == 1)
-			solution[i].calcFOV( env, height, width, visibilityMatrix);
+		if ((int)round(solution[i].getUsed()) == 1)
+			solution[i].calcFOV(env, height, width, visibilityMatrix);
 	}
 }
 
-double SM::fitSM( int* priorityMatrix,
+double SM::fitSM(int* priorityMatrix,
 	double(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix))
 {
-	fitness = func(solution, maxCams,  height,  width, visibilityMatrix, priorityMatrix);
+	fitness = func(solution, maxCams, height, width, visibilityMatrix, priorityMatrix);
 	return fitness;
 }
 
@@ -147,12 +147,12 @@ void SM::exportSolution(const char* fileName) {
 
 	//saving the solution
 	for (i = 0; i < maxCams; i++) {
-		saveFile.write((char *) &solution[i][0], sizeof(double));
-		saveFile.write((char *) &solution[i][1], sizeof(double));
-		saveFile.write((char *) &solution[i][2], sizeof(double));
-		saveFile.write((char *) &solution[i][3], sizeof(double));
-		saveFile.write((char *) &solution[i][4], sizeof(double));
-		saveFile.write((char *) solution[i].getModel(), sizeof(CameraModel));
+		saveFile.write((char*)&solution[i][0], sizeof(double));
+		saveFile.write((char*)&solution[i][1], sizeof(double));
+		saveFile.write((char*)&solution[i][2], sizeof(double));
+		saveFile.write((char*)&solution[i][3], sizeof(double));
+		saveFile.write((char*)&solution[i][4], sizeof(double));
+		saveFile.write((char*)solution[i].getModel(), sizeof(CameraModel));
 	}
 
 	//saving the visibility matrix that contains the coverage of the solution
@@ -180,7 +180,7 @@ void SM::loadSolution(const char* fileName)
 	openedFile.read((char*)&maxCams, sizeof(int));
 	openedFile.read((char*)&numCams, sizeof(int));
 	openedFile.read((char*)&fitness, sizeof(double));
-	openedFile.read((char*)&prob, sizeof(double));
+	//openedFile.read((char*)&prob, sizeof(double));
 
 	//reading the solution
 	solution = new Camera[maxCams];
@@ -228,7 +228,7 @@ SM& SM::operator=(const SM& sm)
 			std::cout << "Error setting camera model" << std::endl;
 		}
 	}
-	
+
 	//making a copy of the visibility matrix
 	for (i = 0; i < width * height; i++) {
 		visibilityMatrix[i] = sm.visibilityMatrix[i];

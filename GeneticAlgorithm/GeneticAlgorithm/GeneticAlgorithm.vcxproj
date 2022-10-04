@@ -144,16 +144,12 @@
     <ClCompile Include="src\Chromosome.cpp" />
     <ClCompile Include="src\GeneticAlgorithm.cpp" />
     <ClCompile Include="src\Shape.cpp" />
-    <ClCompile Include="src\SM.cpp" />
-    <ClCompile Include="src\SMO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Chromosome.h" />
     <ClInclude Include="src\GeneticAlgorithm.h" />
     <ClInclude Include="src\Shape.h" />
-    <ClInclude Include="src\SM.h" />
-    <ClInclude Include="src\SMO.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

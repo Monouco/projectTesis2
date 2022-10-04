@@ -159,7 +159,7 @@ void SM::exportSolution(const char* fileName) {
 	saveFile.write((char*)&maxCams, sizeof(int));
 	saveFile.write((char*)&numCams, sizeof(int));
 	saveFile.write((char*)&fitness, sizeof(double));
-	saveFile.write((char*)&prob, sizeof(double));
+	//saveFile.write((char*)&prob, sizeof(double));
 
 	//saving the solution
 	for (i = 0; i < maxCams; i++) {
@@ -180,6 +180,47 @@ void SM::exportSolution(const char* fileName) {
 
 	if (!saveFile.good()) {
 		std::cout << "Error at saving file " << fileName << std::endl;
+	}
+}
+
+void SM::loadSolution(const char* fileName)
+{
+	int i;
+	std::ifstream openedFile(fileName, std::ios::out | std::ios::binary);
+	if (!openedFile) {
+		std::cout << "Cannot access file " << fileName << std::endl;
+		return;
+	}
+	//saving height and width
+	openedFile.read((char*)&height, sizeof(int));
+	openedFile.read((char*)&width, sizeof(int));
+	//reading other properties
+	openedFile.read((char*)&maxCams, sizeof(int));
+	openedFile.read((char*)&numCams, sizeof(int));
+	openedFile.read((char*)&fitness, sizeof(double));
+	//openedFile.read((char*)&prob, sizeof(double));
+
+	//reading the solution
+	solution = new Camera[maxCams];
+
+	for (i = 0; i < maxCams; i++) {
+		solution[i].setModel(new CameraModel);
+		openedFile.read((char*)&solution[i][0], sizeof(double));
+		openedFile.read((char*)&solution[i][1], sizeof(double));
+		openedFile.read((char*)&solution[i][2], sizeof(double));
+		openedFile.read((char*)&solution[i][3], sizeof(double));
+		openedFile.read((char*)&solution[i][4], sizeof(double));
+		openedFile.read((char*)solution[i].getModel(), sizeof(CameraModel));
+	}
+	visibilityMatrix = new int[width * height];
+	//reading the visibility array that contains the info of the solution
+	openedFile.read((char*)visibilityMatrix, sizeof(int) * (std::streamsize) height * (std::streamsize) width);
+
+	openedFile.close();
+
+	if (!openedFile.good()) {
+		std::cout << "Error at reading file " << fileName << std::endl;
+		return;
 	}
 }
 

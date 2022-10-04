@@ -45,9 +45,6 @@
     <ClCompile Include="src\classes\TextureDisplayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\classes\SM.cpp">
-      <Filter>Source Files\SM</Filter>
-    </ClCompile>
     <ClCompile Include="src\classes\Camera.cpp">
       <Filter>Source Files\SM</Filter>
     </ClCompile>
@@ -59,6 +56,9 @@
     </ClCompile>
     <ClCompile Include="src\stb\stb.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\classes\SM.cpp">
+      <Filter>Source Files\SM</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -89,10 +89,10 @@
     <ClInclude Include="Camera.h">
       <Filter>Header Files\SM</Filter>
     </ClInclude>
-    <ClInclude Include="src\classes\SM.h">
+    <ClInclude Include="src\classes\Shape.h">
       <Filter>Header Files\SM</Filter>
     </ClInclude>
-    <ClInclude Include="src\classes\Shape.h">
+    <ClInclude Include="src\classes\SM.h">
       <Filter>Header Files\SM</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,7 +20,7 @@ double objectiveFunction1(Camera* solution, int maxCams) {
 }
 
 //camera coverage metric
-/*double objectiveFunction2(int height, int width, int* visibilityMatrix, int* priorityMatrix) {
+double objectiveFunction2(int height, int width, int* visibilityMatrix, int* priorityMatrix) {
 	int i, priorityCount = 0, nonPriorityCount = 0, fullPriority = 0, fullNonPriority = 0;
 	double priorityC, nonPriorityC;
 	for (i = 0; i < width * height; i++) {
@@ -59,10 +59,10 @@ double objectiveFunction1(Camera* solution, int maxCams) {
 	}
 
 	return (double)priorityC * ALPHA + nonPriorityC;
-}*/
+}
 
 //not covered metric
-double objectiveFunction2(int height, int width, int* visibilityMatrix, int* priorityMatrix) {
+/*double objectiveFunction2(int height, int width, int* visibilityMatrix, int* priorityMatrix) {
 	int i, priorityCount = 0, nonPriorityCount = 0, fullPriority = 0, fullNonPriority = 0, redundancyVal = 0;;
 	double priorityC, nonPriorityC;
 	for (i = 0; i < width * height; i++) {
@@ -95,11 +95,11 @@ double objectiveFunction2(int height, int width, int* visibilityMatrix, int* pri
 	else {
 		priorityC = 1-(double)priorityCount / fullPriority;
 	}*/
-	nonPriorityC = nonPriorityCount;
+	/*nonPriorityC = nonPriorityCount;
 	//return  1- nonPriorityC / fullNonPriority;
 	return  nonPriorityC - (double)redundancyVal/2;
 
-}
+}*/
 
 // trying to maximize the whole objective function
 FitnessStruct objectiveFunction(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix) {
@@ -115,11 +115,12 @@ FitnessStruct objectiveFunction(Camera* solution, int maxCams, int height, int w
 
 
 int main() {
+	srand(80);
 	int* env = NULL, *feasible = NULL, *priority = NULL, height, width, numModels = 0;
 	Node* wIndex = NULL, * hIndex = NULL;
 	CameraModel* models = NULL;
 
-	int nIter = 50, popSize = 50, maxCam = 4, globalLeaderLimit = popSize / 2;
+	int nIter = 50, popSize = 50, maxCam = 5, globalLeaderLimit = popSize / 2;
 	int maxDim = maxCam * C_OFFSET;
 	int localLeaderLimit = 20;
 	//int localLeaderLimit = maxDim * popSize / 80;
@@ -166,6 +167,9 @@ int main() {
 			", " << population.bestSolution->getSolution()[i].getOffset()<< std::endl;
 	}
 	std::cout << std::endl;
+
+	population.bestSolution->genVisibilityMatrix(env);
+
 	population.bestSolution->exportSolution("bestSM.sm");
 	
 

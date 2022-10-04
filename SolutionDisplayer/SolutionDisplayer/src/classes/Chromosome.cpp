@@ -264,39 +264,24 @@ void Chromosome::setPos(const Position & pos, int j)
 
 void Chromosome::deleteCam(int pos)
 {
-	int i, j;
-	for ( i = 0, j=0; i <= numCams; i++) {
+	for (int i = 0, j=0; i < numCams; i++) {
 
 		if (i >= maxCams) {
 			CameraArray::iterator it = cameraArray.begin();
 			std::advance(it, i - maxCams);
 			j += (*it).getUsed();
-			if (j - 1 == pos) (*it).setUsed(0);
+			if (j == pos) (*it).setUsed(0);
 		}
 		else {
 			j += solution[i].getUsed();
-			if (j - 1 == pos ) solution[i].setUsed(0);
+			if (j == pos) solution[i].setUsed(0);
 		}
 
-		if (j - 1 == pos) {
-			//numCams--;
+		if (j == pos) {
+			numCams--;
 			return;
 		}
 	}
-	if (i == numCams) {
-		std::cout << "Error at marking camera" << std::endl;
-		std::cout << j << " : " << pos << " : " << numCams << std::endl;
-		for (j = 0; j < maxCams; j++) {
-			std::cout << solution[j].getUsed() << " ";
-		}
-		for (CameraArray::iterator it = cameraArray.begin(); it != cameraArray.end(); ++it) {
-			std::cout << (*it).getUsed() << " ";
-		}
-		std::cout << std::endl;
-	}
-
-	
-
 }
 
 void Chromosome::correctSolution() {
@@ -328,12 +313,7 @@ void Chromosome::correctSolution() {
 			if (positions[i].cam != NULL) {
 				for (it = cameraArray.begin(); it != cameraArray.end(); ++it) {
 					//is the same memory space
-					//if (positions[i].cam == &(*it)) {
-					if (positions[i].cam->getUsed() == (*it).getUsed()
-						&& positions[i].cam->getModel() == (*it).getModel()
-						&& positions[i].cam->getX() == (*it).getX()
-						&& positions[i].cam->getY() == (*it).getY()
-						&& positions[i].cam->getOffset() == (*it).getOffset()) {
+					if (positions[i].cam == &(*it)) {
 						//find an empty space on chromosome solution
 						for (j = 0; j < maxCams; j++) {
 							if (solution[j].getUsed() == 0) {
@@ -347,33 +327,15 @@ void Chromosome::correctSolution() {
 								solution[j][6] = positions[i].y;
 								positions[i].cam = &solution[j];
 
-								it = cameraArray.erase(it);
+								cameraArray.erase(it);
 								break;
 							}
 						}
-						if (j == maxCams) {
-							//delete camera 
-							positions[i].cam = NULL;
-							it = cameraArray.erase(it);
-							numCams--;
-							break;
-						}
-						if (it == cameraArray.end()) break;
 					}
 				}
 			}
 		}
 	}
-
-	numCams = 0;
-
-	for (i = 0; i < maxCams; i++) {
-		if ((int)round(solution[i].getUsed()))
-			numCams++;
-	}
-
-	/*if(numCams > maxCams)
-		std::cout << "Error at correcting individual" << std::endl;*/
 
 }
 

@@ -41,18 +41,18 @@ void readModels(const char* fileName, CameraModel*& models, int& numModels, int&
 //Genetic Algorithm
 
 int roulette(Chromosome** population, int popSize, double totFit, int prev=-1);
-sortedPop::iterator roulette(sortedPop population, double totFit);
+int roulette(sortedPop& population, double totFit);
 
 void initPopulation(Pop& pop, CameraModel* models, int numModels, int height, int width, int maxCams, int numPos, Position* positions);
 
 parents selectParents(Pop pop);
-offspring crossover(Chromosome* firstParent, Chromosome* secondParent, int numPos, Position* basePositions);
+void crossover(Chromosome* firstParent, Chromosome* secondParent, int numPos, Position* basePositions, Chromosome* firstChild, Chromosome* secondChild);
 void mutation(Chromosome* individual, CameraModel* models, int numModels, int  maxMutGenes, int numPos);
-void selectSurvivors(Pop& pop, int newPopSize);
+void selectSurvivors(Pop& pop, int newPopSize, Position* positions, int numPos, int height, int width, int maxCams);
 void correction(Chromosome* individual, CameraModel* models, int numModels, int maxCam);
 
 void GeneticAlgorithm(Pop& pop, CameraModel* models, int numModels, int height, int width, int* env, int* priority, int nIter,
-	int maxCams, Position* positions
+	int maxCams, Position* positions, int numPos
 	, FitnessStruct(*objectiveFunction)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix));
 
 #endif // !GENETICALGORITHM_H

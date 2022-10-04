@@ -489,20 +489,21 @@ void GlobalLeaderLearningPhase(Pop& pop, int selection) {
 	}
 	if (bestMember != -1) {
 		//assigning the localLeader
-		pop.globalLeader = members[bestMember];
-		if (pop.bestSolution == NULL) {
-			pop.bestSolution = new SM(*pop.globalLeader);
-		}
-		else {
-			if(bestFit > pop.bestSolution->getFitness())
-				*pop.bestSolution = *pop.globalLeader;
-		}
+		pop.globalLeader = members[bestMember];		
 	}
 	else {
 		//if the position havent been updated, increment the local limit count
 		if (!selection) {
 			pop.globalLimitCount += 1;
 		}
+	}
+
+	if (pop.bestSolution == NULL) {
+		pop.bestSolution = new SM(*pop.globalLeader);
+	}
+	else {
+		if (bestFit > pop.bestSolution->getFitness())
+			*pop.bestSolution = *pop.globalLeader;
 	}
 	
 }

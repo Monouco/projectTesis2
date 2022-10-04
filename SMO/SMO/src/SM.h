@@ -8,11 +8,15 @@
 #ifndef C_OFFSET
 #define C_OFFSET 5
 #endif // !C_OFFSET
+
+#ifndef FITNESS_STRUCT
+#define FITNESS_STRUCT
 typedef struct FitnessStruct {
 	double mainFO;
 	double FO1;
 	double FO2;
 }FitnessStruct;
+#endif //FITNESS_STRUCT
 
 
 class SM
@@ -43,6 +47,7 @@ public:
 		FitnessStruct(*func)(Camera* solution, int maxCams, int height, int width, int* visibilityMatrix, int* priorityMatrix));
 	void calProb(double maxFitness);
 	void exportSolution(const char* filename);
+	void loadSolution(const char* fileName);
 
 	SM& operator=(const SM& sm);
 

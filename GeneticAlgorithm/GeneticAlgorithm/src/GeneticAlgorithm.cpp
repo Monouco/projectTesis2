@@ -79,8 +79,8 @@ void readEnv(const char* fileName, int*& env, int*& feasible, int*& priority, in
 	}
 	
 	basePositions = new Position[numPos];
-	int i = 0;
-	for (std::vector<Position>::iterator it = tempPos.begin(); it != tempPos.end(); ++it) {
+	i = 0;
+	for (std::vector<Position>::iterator it = tempPos.begin(); it != tempPos.end(); ++it, i++) {
 		basePositions[i].x = (*it).x;
 		basePositions[i].y = (*it).y;
 		basePositions[i].index = (*it).index;
@@ -145,26 +145,27 @@ int roulette(Chromosome** population, int popSize, double totFit, int prev)
 	return i-2;
 }
 
- sortedPop::iterator roulette(sortedPop population, double totFit)
+ int roulette(sortedPop& population, double totFit)
 {
 	int i = 0;
 	double sumFit = 0, pickFit = rand01(0,totFit);
 	sortedPop::iterator it;
 
-	for (it = population.begin(); it != population.end(); ++it) {
+	for (it = population.begin(), i = 0; it != population.end(); ++it, i++) {
 		sumFit = sumFit + (*it).getFitness();
 		if (sumFit >= pickFit) {
-			return it;
+			return i;
 		}
 		
 	}
-	return it;
+	return i;
 }
 
 void initPopulation(Pop& pop, CameraModel* models, int numModels, int height, int width, int maxCams, int numPos, Position* positions) {
 	int i = 0, numCams, pos, j, model;
 	Chromosome* individual;
 	Camera* tempCamera = new Camera();
+	Position p;
 	for (i = 0; i < pop.popSize; i++) {
 		individual = new Chromosome(positions,numPos, height, width, maxCams);
 		numCams = randInt(1, maxCams);
@@ -174,7 +175,7 @@ void initPopulation(Pop& pop, CameraModel* models, int numModels, int height, in
 			(*tempCamera)[1] = model;
 			tempCamera->setModel(& models[model]);
 			positions[pos].cam = tempCamera;
-
+			p = positions[pos];
 			individual->setPos(positions[pos], pos);
 
 			positions[pos].cam = NULL;
@@ -198,24 +199,20 @@ parents selectParents(Pop pop) {
 	return p;
 }
 
-offspring crossover(Chromosome* firstParent, Chromosome* secondParent, int numPos, Position * basePositions) {
+void crossover(Chromosome* firstParent, Chromosome* secondParent, int numPos, Position * basePositions, Chromosome* firstChild, Chromosome* secondChild) {
 	int i, posCut = randInt(0, numPos);
-	offspring childs;
-	Chromosome* child1 = new Chromosome(basePositions, numPos, firstParent->getHeight(), firstParent->getWidth(), firstParent->getMaxCams());
-	Chromosome* child2 = new Chromosome(basePositions, numPos, firstParent->getHeight(), firstParent->getWidth(), firstParent->getMaxCams());
+	//Chromosome* child1 = new Chromosome(basePositions, numPos, firstParent->getHeight(), firstParent->getWidth(), firstParent->getMaxCams());
+	//Chromosome* child2 = new Chromosome(basePositions, numPos, firstParent->getHeight(), firstParent->getWidth(), firstParent->getMaxCams());
 	for (i = 0; i < numPos; i++) {
 		if (i <= posCut) {
-			child1->setPos((*firstParent)[i], i);
-			child2->setPos((*secondParent)[i], i);
+			firstChild->setPos((*firstParent)[i], i);
+			secondChild->setPos((*secondParent)[i], i);
 		}
 		else {
-			child1->setPos((*secondParent)[i], i);
-			child2->setPos((*firstParent)[i], i);
+			firstChild->setPos((*secondParent)[i], i);
+			secondChild->setPos((*firstParent)[i], i);
 		}
 	}
-	childs[0] = child1;
-	childs[1] = child2;
-	return childs;
 }
 
 void mutation(Chromosome* individual, CameraModel* models, int numModels, int  maxMutGenes, int numPos) {
@@ -251,38 +248,51 @@ void mutation(Chromosome* individual, CameraModel* models, int numModels, int  m
 	}
 }
 
-void selectSurvivors(Pop& pop, int newPopSize) {
-	int i, bestVal = pop.bestRate*pop.popSize;
+void selectSurvivors(Pop& pop, int newPopSize, Position* positions, int numPos, int height, int width, int maxCams) {
+	int i, bestVal = pop.bestRate*pop.popSize, j;
 	sortedPop totPop;
-	sortedPop::iterator it;
+	sortedPop::iterator it, itTemp;
 	double totFit=0;
 
-	Chromosome* tempChromosome;
+	Chromosome tempChromosome(positions, numPos, height, width, maxCams);
+
+	std::cout << "sorting list" << std::endl;
 	for (i = 0; i < pop.popSize + newPopSize; i++) {
 		if(i < pop.popSize)
-			tempChromosome = new Chromosome(*pop.population[i]);
+			tempChromosome = *pop.population[i];
 		else
-			tempChromosome = new Chromosome(*pop.newPopulation[i-pop.popSize]);
-		totPop.push_back(*tempChromosome);
+			tempChromosome = *pop.newPopulation[i-pop.popSize];
+		totPop.push_back(tempChromosome);
 	}
 
 	totPop.sort();
 
-	for (it = totPop.begin(), i = 0; i < bestVal; i++, ++it) {
-		pop.population[i] = new Chromosome((*it));
-		totPop.erase(it);
+	std::cout << "adding best members to next population" << std::endl;
+	for (it = totPop.begin(), i = 0; i < bestVal; i++) {
+		//first iteration is the best of the population
+		if ((*it).getFitness() > pop.bestSolution->getFitness()) {
+			*pop.bestSolution = (*it);
+		}
+		*pop.population[i] = (*it);
+		itTemp = it;
+		it = totPop.erase(it);
+		if (it == totPop.end()) break;
 	}
 
 	for (sortedPop::iterator it2 = totPop.begin(); it2 != totPop.end(); ++it2) {
 		totFit = totFit + (*it2).getFitness();
 	}
 
+	std::cout << "adding other members to next population" << std::endl;
 	for (; i < pop.maxPopSize; i++) {
-		it = roulette(totPop, totFit);
-		pop.population[i] = new Chromosome((*it));
+		j = roulette(totPop, totFit);
+		it = totPop.begin();
+		std::advance(it, j);
+		*pop.population[i] = (*it);
 		//to avoid repeating elements
 		totFit -= (*it).getFitness();
-		totPop.erase(it);
+		it = totPop.erase(it);
+		if (it == totPop.end()) break;
 	}
 }
 
@@ -309,12 +319,16 @@ void correction(Chromosome* individual, CameraModel* models, int numModels, int 
 			}
 		}
 		else {
-			for (nCams = individual->getNumCams(); nCams > maxCam; nCams--) {
-				toDelete = randInt(0, individual->getNumCams());
+			for (nCams = individual->getNumCams(); nCams >= maxCam; nCams--) {
+				//toDelete = randInt(0, individual->getNumCams());
+				toDelete = randInt(0, nCams);
 				individual->deleteCam(toDelete);
 			}
 
 			individual->correctSolution();
+			if (individual->getNumCams() > individual->getMaxCams()) {
+				std::cout << "Error at correcting individual" << std::endl;
+			}
 		}
 	}
 }
@@ -330,6 +344,14 @@ void GeneticAlgorithm(Pop& pop, CameraModel* models, int numModels, int height, 
 	parents pair;
 	offspring children;
 
+	pop.newPopulation = new Chromosome * [newPopSize];
+
+	//creating empty new population
+	for (i = 0; i < newPopSize; i++) {
+		pop.newPopulation[i] = new Chromosome(positions, numPos, height, width, maxCams);
+	}
+
+	std::cout << "Init Population" << std::endl;
 	//first generation
 	initPopulation(pop, models, numModels, height, width, maxCams, numPos, positions);
 	for (j = 0; j < pop.popSize; j++) {
@@ -339,22 +361,26 @@ void GeneticAlgorithm(Pop& pop, CameraModel* models, int numModels, int height, 
 
 	for (i = 0; i < nIter; i++) {
 
+		std::cout << "Select parents for gen " << i << std::endl;
 		//selecting parents
 		for (j = 0; j < numPairs; j++) {
 			pairs.push_back(selectParents(pop));
 		}
 
+		std::cout << "Making new generation " << i << std::endl;
 		//crossover
 		for (j = 0; j < newPopSize; j+=2) {
 			pair = pairs.back();
 			pairs.pop_back();
 
-			children = crossover(pair[0], pair[1], numPos, positions);
+			//children = crossover(pair[0], pair[1], numPos, positions);
+			crossover(pair[0], pair[1], numPos, positions, pop.newPopulation[j], pop.newPopulation[j + 1]);
 
-			pop.newPopulation[j] = children[0];
-			pop.newPopulation[j+1] = children[1];
+			//pop.newPopulation[j] = children[0];
+			//pop.newPopulation[j+1] = children[1];
 		}
 
+		std::cout << "Mutation phase for gen " << i << std::endl;
 		//mutation
 		for (j = 0; j < newPopSize; j++) {
 			mutProb = rand01(0, 1);
@@ -370,8 +396,9 @@ void GeneticAlgorithm(Pop& pop, CameraModel* models, int numModels, int height, 
 			pop.newPopulation[j]->fit(priority, objectiveFunction);
 		}
 
+		std::cout << "Select next gen " << i << std::endl;
 		//selecting new population
-		selectSurvivors(pop, newPopSize);
+		selectSurvivors(pop, newPopSize, positions, numPos, height, width, maxCams);
 	}
 
 }

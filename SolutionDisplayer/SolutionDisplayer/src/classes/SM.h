@@ -17,7 +17,7 @@ public:
 	SM(int maxCams, int height, int width);
 	SM(const SM& sm, int mode = 1);
 	~SM();
-	
+
 	//setters
 	void setNumCams(int num);
 	void setModelCam(CameraModel* cam, int j);

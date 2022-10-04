@@ -45,6 +45,13 @@ void TextureDisplayer::processInput(GLFWwindow* window){
 	glfwGetCursorPos(window, &xPos, &yPos);
 
 	//Get inputs that change modes
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+		mode = 1;
+	}
+	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+		mode = 2;
+	}
+
 
 	//redo
 	if (prevRedo && glfwGetKey(window, GLFW_KEY_Z) == GLFW_RELEASE)
@@ -71,7 +78,7 @@ void TextureDisplayer::processInput(GLFWwindow* window){
 		prevOpen = 0;
 	if (!prevOpen && glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		prevOpen = 1;
-		openTexture("level.pz", "bestSM.sm");
+		openTexture("level.pz", (mode==1) ? "bestSM.sm" : "bestCh.sm");
 		return;
 	}
 
@@ -87,14 +94,15 @@ void TextureDisplayer::refresh(int mode) {
 		
 		//Look for changes in array or if a shape was drawn on that position
 		if (mode || arrChanged[i]) {
-			if (arrBuffer[i] == 0 || arrBuffer[i] == 1) {
+			if (arrBuffer[i] == 0 || arrBuffer[i] == 2 || arrBuffer[i] == 3 || arrBuffer[i] == 4) {
 				//Translate changes into the pixel buffer
-				paintPixel(i, arrBuffer[i]);
+				paintPixel(i, 0);
 			}
 			else {
-				if (visibility[i] > 0) {
-					paintPixel(i, visibility[i] + 4);
-				}
+				paintPixel(i, arrBuffer[i]);
+			}
+			if (visibility[i] > 0) {
+				paintPixel(i, visibility[i] + 4);
 			}
 			arrChanged[i] = 0;
 			changed = 1;
@@ -104,6 +112,7 @@ void TextureDisplayer::refresh(int mode) {
 		double x, y;
 		
 		for (i = 0; i < solutionSM.getMaxCams(); i++) {
+			if (round(solutionSM.getSolution()[i].getUsed()) == 0) continue;
 			x = solutionSM.getSolution()[i].getX();
 			y = solutionSM.getSolution()[i].getY();
 			//x = 200;
